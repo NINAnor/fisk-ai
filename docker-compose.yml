@@ -29,3 +29,15 @@ services:
       - ./data:/app/data
       - ./logs:/app/logs
       - ./app/logs:/app/app/logs
+  dev:
+    <<: *common
+    profiles:
+      - dev
+    #command: poetry run python -m app.main
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./input:/app/input
+      - ./output:/app/output
+      #- ./:/app
+      - ./app:/app/app
+      - ./pyproject.toml:/app/pyproject.toml

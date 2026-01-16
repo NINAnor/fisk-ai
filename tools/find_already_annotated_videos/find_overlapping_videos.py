@@ -9,6 +9,7 @@ from pathlib import Path
 
 import cv2
 import ffmpeg
+import av
 import numpy as np
 import tqdm
 from imagehash import dhash, phash
@@ -36,6 +37,38 @@ def extract_images_from_video(video_path, output_folder):
 
     cap.release()
 
+# The following function is my attempt to substitute the function "extract_images_from_video_ffmpeg to avoid using ffmpeg"
+def extract_images_from_video_av(video_path, output_folder):
+    video_path = Path(video_path)  # Ensure it's a Path object
+    video_name = video_path.stem  # Get the file name without extension
+
+    # Create the output folder if it doesn't exist
+    os.makedirs(output_folder, exist_ok=True)
+
+    output_file_pattern = os.path.join(output_folder, f"{video_name}_frame_%04d.jpg")
+
+    # Open the video file with PyAV
+    try:
+        container = av.open(str(video_path))
+    except av.AVError as e:
+        print(f"Error opening video file: {e}")
+        return
+
+    frame_index = 0
+
+    # Loop through all the frames in the video stream
+    for frame in container.decode(video=0):  # 'video=0' to select the first video stream
+        # Convert the frame to an image (PIL)
+        img = frame.to_image()
+
+        # Save the frame as a JPEG image
+        output_file = output_file_pattern % frame_index
+        img.save(output_file)
+
+        print(f"Saved frame {frame_index} to {output_file}")
+        frame_index += 1
+
+    print(f"Extraction complete. {frame_index} frames saved to {output_folder}.")
 
 def extract_images_from_video_ffmpeg(video_path, output_folder):
     video_name = video_path.stem
